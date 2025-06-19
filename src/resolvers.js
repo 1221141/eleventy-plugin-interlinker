@@ -72,3 +72,25 @@ export const defaultEmbedFn = async (link, currentPage, interlinker) => {
 
   return await tplFn({content, ...page.data});
 }
+
+/**
+ * Default Resolving function for converting image wikilinks into img tags.
+ *
+ * @param {import('@photogabble/eleventy-plugin-interlinker').WikilinkMeta} link
+ * @param {*} currentPage
+ * @param {import('./interlinker')} interlinker
+ * @return {Promise<string>}
+ */
+export const defaultImageEmbedFn = async (link, currentPage, interlinker) => {
+  // If link.name already contains a path (like "images/photo.png"), use it as-is
+  // Otherwise, prepend the imagesFolder
+  const imagePath = link.name.includes('/') 
+    ? `/${link.name}` 
+    : `${interlinker.opts.imagesFolder || '/images/'}${link.name}`;
+  
+  // Extract filename for alt text (remove path and extension)
+  const filename = link.name.split('/').pop().replace(/\.[^/.]+$/, "");
+  const altText = encodeHTML(link.title || filename);
+  
+  return `<img src="${imagePath}" alt="${altText}" />`;
+}

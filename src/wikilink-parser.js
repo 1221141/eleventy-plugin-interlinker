@@ -99,7 +99,7 @@ export default class WikilinkParser {
       const parts = meta.name.split(':').map(part => part.trim());
       if (parts[0].at(-1) !== '/') {
         if (!this.opts.resolvingFns || this.opts.resolvingFns.has(parts[0]) === false) {
-          const {found} = pageDirectory.findByLink(meta);
+          const { found } = pageDirectory.findByLink(meta);
           if (!found) throw new Error(`Unable to find resolving fn [${parts[0]}] for wikilink ${link} on page [${filePathStem}]`);
         } else {
           meta.resolvingFnName = parts[0];
@@ -111,7 +111,7 @@ export default class WikilinkParser {
     }
 
     // Lookup page data from 11ty's collection to obtain url and title if currently null
-    const {page, foundByAlias} = pageDirectory.findByLink(meta);
+    const { page, foundByAlias } = pageDirectory.findByLink(meta);
     if (page) {
       if (foundByAlias) {
         meta.title = meta.name;
@@ -144,10 +144,22 @@ export default class WikilinkParser {
    * @param {string|undefined} filePathStem
    * @return {Array<import('@photogabble/eleventy-plugin-interlinker').WikilinkMeta>}
    */
-  parseMultiple(links, pageDirectory, filePathStem) {
-    return links.map(link => this.parseSingle(link, pageDirectory, filePathStem));
+  parseMultiple(matches, pageDirectory, filePathStem) {
+  const results = [];
+  
+  for (const match of matches) {
+    const wikilink = this.parseSingle(match, pageDirectory, filePathStem);
+    
+    // Add image detection logic here:
+    if (wikilink.isEmbed && this.isImageEmbed(wikilink.name)) {
+      wikilink.resolvingFnName = 'image-embed';
+    }
+    
+    results.push(wikilink);
   }
-
+  
+  return results;
+}
   /**
    * Finds all wikilinks within a document (HTML or otherwise) and returns their
    * parsed result.
@@ -164,4 +176,16 @@ export default class WikilinkParser {
       filePathStem
     )
   }
+
+
+  /**
+   * Check if a wikilink is an image embed based on file extension
+   * @param {string} name - The filename from the wikilink
+   * @returns {boolean}
+   */
+  isImageEmbed(name) {
+    const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.bmp'];
+    return imageExtensions.some(ext => name.toLowerCase().endsWith(ext));
+  }
+
 }

@@ -60,6 +60,9 @@ type EleventyPluginInterlinkOptions = {
   // resolvingFns is a list of resolving functions. These are invoked by a wikilink containing a `:` character
   // prefixed by the fn name. The page in this case is the linking page.
   resolvingFns?: Map<string, (link: WikilinkMeta, currentPage: any, interlinker: Interlinker) => Promise<string>>,
+
+  // imagesFolder is the base path where images are stored, used for image embeds like ![[image.png]]
+  imagesFolder?: string,
 }
 
 interface ErrorRenderFn {
