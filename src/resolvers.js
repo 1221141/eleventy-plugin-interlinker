@@ -17,7 +17,14 @@ export const defaultResolvingFn = async (link, currentPage, interlinker) => {
     href = `${href}#${link.anchor}`;
   }
 
-  return href === false ? link.link : `<a href="${href}">${text}</a>`;
+  if (href === false) {
+    // If href is false, we don't want to create a link
+    return link.link;
+  } else if (href.startsWith(interlinker.opts.stubUrl)) {
+    return `<span title="${text} was not created yet" class="dead-wikilink">${text}</span>`;
+  } else {
+    return `<a href="${href}" class="wikilink">${text}</a>`;
+  }
 }
 
 /**
